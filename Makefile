@@ -14,8 +14,11 @@ vet: fmt
 build: vet
 	go build .
 
+lint: vet
+	golangci-lint run ./...
+
 clean:
 	go clean
 
 run: vet
-	DEV=true go run main.go
+	DEV=true go run cmd/medguardian/main.go
