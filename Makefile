@@ -2,8 +2,17 @@
 
 .PHONY: build_for_alpine fmt vet build run
 
-build_for_alpine:
-	CGO_ENABLED=0 GOOS=linux go build -v -a -installsuffix cgo .
+build_for_alpine: lint
+	CGO_ENABLED=0 GOOS=linux go build -v -a -installsuffix cgo ./cmd/medguardian/
+
+build_for_scratch:
+	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o app ./cmd/medguardian/
+
+image:
+	docker build -t medguardian:test .
+
+run_container:
+	docker run --rm -d --env-file .env.local medguardian:test
 
 fmt:
 	go fmt ./...
