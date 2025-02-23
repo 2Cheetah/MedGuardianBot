@@ -42,6 +42,7 @@ jobs:
         uses: appleboy/ssh-action@v1.2.1
         with:
           host: "[${{ secrets.VPS_SERVER }}]"
+          protocol: tcp6
           username: ${{ secrets.VPS_USER}}
           key: ${{ secrets.VPS_SSH_KEY }}
           script: |
