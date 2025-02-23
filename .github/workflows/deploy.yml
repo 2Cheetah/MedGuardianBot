@@ -26,7 +26,10 @@ jobs:
           docker images medguardianbot:latest
 
       - name: Save Docker image
-        run: docker save -o /tmp/medguardianbot-image.tar medguardianbot:latest
+        run: |
+          docker save -o /tmp/medguardianbot-image.tar medguardianbot:latest
+          echo "Verifying save..."
+          ls -lah /tmp/medguardianbot-image.tar
 
       - name: Copy image to AWS Lightsail instance
         uses: appleboy/scp-action@v0.1.7
