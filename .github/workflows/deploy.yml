@@ -44,5 +44,5 @@ jobs:
           script: |
             docker stop medguardianbot || true
             docker rm medguardianbot || true
-            docker load -i /home/${{ secrets.EC2_USER }}/medguardianbot-image.tar
+            docker load -i /home/${{ secrets.VPS_USER }}/medguardianbot-image.tar
             docker run -d --name medguardianbot --restart=always -e TELEGRAM_BOT_TOKEN=${{ secrets.TELEGRAM_BOT_TOKEN }} medguardianbot
