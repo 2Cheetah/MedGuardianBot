@@ -1,4 +1,4 @@
-name: Deploy Telegram Bot
+name: Deploy to AWS Lightsail
 
 on:
   push:
