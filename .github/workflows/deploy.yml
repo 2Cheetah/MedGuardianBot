@@ -43,7 +43,6 @@ jobs:
           mkdir -p ~/.ssh
           echo "${{ secrets.VPS_SSH_KEY }}" > ~/.ssh/key.pem
           chmod 400 ~/.ssh/key.pem
-          ssh-keyscan -H ${{ secrets.VPS_SERVER }} >> ~/.ssh/known_hosts
 
       - name: Connect to server and run whoami
         run: ssh -i ~/.ssh/key.pem ${{ secrets.VPS_USER }}@${{ secrets.VPS_SERVER }} "whoami"
