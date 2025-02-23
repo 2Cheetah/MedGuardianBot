@@ -38,15 +38,14 @@ jobs:
           push: true
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/medguardianbot:latest
 
+      - name: Install SSH Client
+        run: sudo apt-get install -y openssh-client sshpass
+        
       - name: Deploy on AWS Lightsail Instance
-        uses: appleboy/ssh-action@v1.2.1
-        with:
-          host: ${{ secrets.VPS_SERVER }}
-          username: ${{ secrets.VPS_USER }}
-          key: ${{ secrets.VPS_SSH_KEY }}
-          script: |
-            docker login -u ${{ secrets.DOCKERHUB_USERNAME }} -p ${{ secrets.DOCKERHUB_TOKEN }}
+        run: |
+          sshpass -p "${{ secrets.VPS_SSH_KEY }}" ssh -o StrictHostKeyChecking=no ${{ secrets.VPS_USER }}@${{ secrets.VPS_USER }} << 'EOF'
+            docker pull ${{ secrets.DOCKERHUB_USERNAME }}/medguardianbot:latest
             docker stop medguardianbot || true
             docker rm medguardianbot || true
-            docker pull ${{ secrets.DOCKERHUB_USERNAME }}/medguardianbot:latest
             docker run -d --name medguardianbot --restart=always -e API_TOKEN=${{ secrets.TELEGRAM_BOT_TOKEN }} medguardianbot
+          EOF
