@@ -37,17 +37,26 @@ jobs:
           context: .
           push: true
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/medguardianbot:latest
+      
+      - name: Setup SSH Key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.VPS_SSH_KEY }}" > ~/.ssh/key.pem
+          chmod 400 ~/.ssh/key.pem
+          ssh-keyscan -H ${{ secrets.VPS_SERVER }} >> ~/.ssh/known_hosts
 
-      - name: Deploy on AWS Lightsail Instance
-        uses: appleboy/ssh-action@v1.2.1
-        with:
-          host: ${{ secrets.VPS_SERVER }}
-          protocol: tcp6
-          port: 22
-          username: ${{ secrets.VPS_USER}}
-          key: ${{ secrets.VPS_SSH_KEY }}
-          script: |
-            docker pull ${{ secrets.DOCKERHUB_USERNAME }}/medguardianbot:latest
-            docker stop medguardianbot || true
-            docker rm medguardianbot || true
-            docker run -d --name medguardianbot --restart=always -e API_TOKEN=${{ secrets.TELEGRAM_BOT_TOKEN }} medguardianbot
+      - name: Connect to server and run whoami
+        run: ssh -i ~/.ssh/key.pem ${{ secrets.VPS_USER }}@${{ secrets.VPS_SERVER }} "whoami"
+
+      # - name: Deploy on AWS Lightsail Instance
+      #   uses: appleboy/ssh-action@v1.2.1
+      #   with:
+      #     host: ${{ secrets.VPS_SERVER }}
+      #     protocol: tcp6
+      #     username: ${{ secrets.VPS_USER}}
+      #     key: ${{ secrets.VPS_SSH_KEY }}
+      #     script: |
+      #       docker pull ${{ secrets.DOCKERHUB_USERNAME }}/medguardianbot:latest
+      #       docker stop medguardianbot || true
+      #       docker rm medguardianbot || true
+      #       docker run -d --name medguardianbot --restart=always -e API_TOKEN=${{ secrets.TELEGRAM_BOT_TOKEN }} medguardianbot
