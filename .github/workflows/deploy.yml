@@ -1,0 +1,48 @@
+name: Deploy Telegram Bot
+
+on:
+  push:
+    branches: master
+  pull_request:
+    branches: master
+  workflow_run:
+    workflows: ["Test"]
+    types:
+      - completed
+
+jobs:
+  deploy:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4.2.2
+
+      - name: Build Docker image
+        run: docker build -t medguardianbot .
+
+      - name: Save Docker image as tar
+        run: docker save -o medguardianbot-image.tar medguardianbot
+
+      - name: Copy image to AWS Lightsail instance
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.VPS_SERVER }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          source: "medguardianbot-image.tar"
+          target: "/home/${{ secrets.VPS_USER }}/"
+          rm: true
+
+      - name: Deploy on AWS Lightsail Instance
+        uses: appleboy/ssh-action@v1.2.1
+        with:
+          host: ${{ secrets.VPS_SERVER }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          script: |
+            docker stop medguardianbot || true
+            docker rm medguardianbot || true
+            docker load -i /home/${{ secrets.EC2_USER }}/medguardianbot-image.tar
+            docker run -d --name medguardianbot --restart=always -e TELEGRAM_BOT_TOKEN=${{ secrets.TELEGRAM_BOT_TOKEN }} medguardianbot
