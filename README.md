@@ -1,3 +1,5 @@
+[![codecov](https://codecov.io/gh/2Cheetah/MedGuardianBot/graph/badge.svg?token=67U0JHAADL)](https://codecov.io/gh/2Cheetah/MedGuardianBot)
+
 # Med Guardian Bot
 
 Med Guardian Bot is a Telegram bot designed to help users manage their medication schedules efficiently. The bot offers the following features:
