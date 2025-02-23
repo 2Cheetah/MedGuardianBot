@@ -42,10 +42,14 @@ jobs:
         run: sudo apt-get install -y openssh-client sshpass
         
       - name: Deploy on AWS Lightsail Instance
-        run: |
-          sshpass -p "${{ secrets.VPS_SSH_KEY }}" ssh -o StrictHostKeyChecking=no ${{ secrets.VPS_USER }}@${{ secrets.VPS_USER }} << 'EOF'
+        uses: appleboy/ssh-action@v1.2.1
+        with:
+          host: ${{ secrets.VPS_SERVER }}
+          username: ${{ secrets.VPS_USER}}
+          password: ${{ secrets.VPS_SSH_KEY }}
+          port: ${{ secrets.VPS_PORT }}
+          script: |
             docker pull ${{ secrets.DOCKERHUB_USERNAME }}/medguardianbot:latest
             docker stop medguardianbot || true
             docker rm medguardianbot || true
             docker run -d --name medguardianbot --restart=always -e API_TOKEN=${{ secrets.TELEGRAM_BOT_TOKEN }} medguardianbot
-          EOF
