@@ -39,7 +39,6 @@ jobs:
           key: ${{ secrets.VPS_SSH_KEY }}
           source: "/tmp/medguardianbot-image.tar"
           target: "/home/${{ secrets.VPS_USER }}/"
-          tar_exec: ""
 
       - name: Deploy on AWS Lightsail Instance
         uses: appleboy/ssh-action@v1.2.1
