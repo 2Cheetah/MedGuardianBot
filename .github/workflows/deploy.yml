@@ -23,7 +23,7 @@ jobs:
         run: docker build -t medguardianbot .
 
       - name: Save Docker image
-        run: docker save -o medguardianbot-image medguardianbot
+        run: docker save -o /tmp/medguardianbot-image.tar medguardianbot
 
       - name: Copy image to AWS Lightsail instance
         uses: appleboy/scp-action@v0.1.7
@@ -31,7 +31,7 @@ jobs:
           host: ${{ secrets.VPS_SERVER }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
-          source: "medguardianbot-image"
+          source: "/tmp/medguardianbot-image.tar"
           target: "/home/${{ secrets.VPS_USER }}/"
 
       - name: Deploy on AWS Lightsail Instance
