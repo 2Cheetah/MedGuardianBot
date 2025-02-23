@@ -41,7 +41,7 @@ jobs:
       - name: Deploy on AWS Lightsail Instance
         uses: appleboy/ssh-action@v1.2.1
         with:
-          host: "[${{ secrets.VPS_SERVER }}]"
+          host: ${{ secrets.VPS_SERVER }}
           username: ${{ secrets.VPS_USER}}
           key: ${{ secrets.VPS_SSH_KEY }}
           script: |
