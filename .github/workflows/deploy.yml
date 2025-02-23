@@ -48,6 +48,7 @@ jobs:
           username: ${{ secrets.VPS_USER}}
           password: ${{ secrets.VPS_SSH_KEY }}
           port: ${{ secrets.VPS_PORT }}
+          protocol: tcp6
           script: |
             docker pull ${{ secrets.DOCKERHUB_USERNAME }}/medguardianbot:latest
             docker stop medguardianbot || true
