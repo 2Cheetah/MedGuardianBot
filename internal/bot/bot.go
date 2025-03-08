@@ -29,7 +29,9 @@ func NewTelegramBot(apiToken string) (*TelegramBot, error) {
 }
 
 func (tb *TelegramBot) Start(ctx context.Context) {
+	slog.Debug("registering handlers...")
 	tb.RegisterHandler("/start", handlers.HandleStart)
+	slog.Debug("starting bot...")
 	tb.bot.Start(ctx)
 }
 
@@ -40,5 +42,5 @@ func (tb *TelegramBot) RegisterHandler(pattern string, h bot.HandlerFunc) {
 		bot.MatchTypeExact,
 		h,
 	)
-	slog.Info("registered /start handler", "id", id)
+	slog.Debug("registered handler", "pattern", pattern, "id", id)
 }
