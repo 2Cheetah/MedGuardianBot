@@ -4,6 +4,7 @@ package repository
 import (
 	"database/sql"
 	"fmt"
+	"log/slog"
 
 	"github.com/2Cheetah/MedGuardianBot/internal/domain"
 )
@@ -17,24 +18,39 @@ func NewSQLiteUserRepository(db *sql.DB) *SQLiteUserRepository {
 }
 
 func (r *SQLiteUserRepository) CreateUser(user *domain.User) error {
-	_, err := r.db.Exec("INSERT INTO users (id, first_name, last_name, username) VALUES (?, ?, ?, ?) ON CONFLICT(id) DO NOTHING",
-		user.ID, user.FirstName, user.LastName, user.Username)
+	q := "INSERT INTO users (id, first_name, last_name, username) VALUES (?, ?, ?, ?) ON CONFLICT(id) DO NOTHING"
+	_, err := r.db.Exec(
+		q,
+		user.ID,
+		user.FirstName,
+		user.LastName,
+		user.Username,
+	)
 	return err
 }
 
 func (r *SQLiteUserRepository) GetUser(id int64) (*domain.User, error) {
-	rows, err := r.db.Query("SELECT first_name, last_name, username  FROM users WHERE id = ? LIMIT 1", id)
+	slog.Info("querying user with", "id", id)
+	rows, err := r.db.Query("SELECT first_name, last_name, username  FROM users WHERE id = ?", id)
+	slog.Info("found", "rows", rows)
 	if err != nil {
-		return nil, fmt.Errorf("couldn't query user from db, error %v", err)
+		return nil, fmt.Errorf("couldn't query user from db, error %w", err)
 	}
 	defer rows.Close()
 
-	rows.Next()
 	var first_name string
 	var last_name string
 	var username string
-	if err = rows.Scan(&first_name, &last_name, &username); err != nil {
-		return nil, fmt.Errorf("couldn't scan user from db, error %v", err)
+
+	slog.Info("scanning rows...")
+	if rows.Next() {
+		if err := rows.Scan(&first_name, &last_name, &username); err != nil {
+			slog.Warn("error while scanning rows", "error", err)
+			return nil, fmt.Errorf("couldn't scan user from db, error %w", err)
+		}
+	} else {
+		slog.Info("no user found with id", "id", id)
+		return nil, nil
 	}
 
 	return &domain.User{

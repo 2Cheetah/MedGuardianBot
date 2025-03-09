@@ -62,34 +62,32 @@ func handleEcho(ctx context.Context, b *bot.Bot, update *models.Update) {
 
 func (tb *TelegramBot) handleStart(ctx context.Context, b *bot.Bot, update *models.Update) {
 	// get user info
+	id := update.Message.From.ID
 	user := &domain.User{
 		FirstName: update.Message.From.FirstName,
 		LastName:  update.Message.From.LastName,
 		Username:  update.Message.From.Username,
-		ID:        update.Message.From.ID,
+		ID:        id,
 	}
 
 	slog.Info("message from", "user", user)
 
 	// check if user exists in DB and save user info
-	u, err := tb.UserService.GetUser(update.Message.From.ID)
+	u, err := tb.UserService.GetUser(id)
 	if err != nil {
-		slog.Warn("couldn't get a user from DB", "err", err)
+		slog.Warn("there was an error while trying to get a user", "error", err)
 	}
-	// if no user returned, create a user
 	if u == nil {
-		slog.Info("creating a user...", "user", user)
 		if err := tb.UserService.CreateUser(user); err != nil {
 			slog.Warn("couldn't create a user", "user data", user)
 		}
 	}
 
 	// send message to the user
-	_, err = b.SendMessage(ctx, &bot.SendMessageParams{
+	if _, err := b.SendMessage(ctx, &bot.SendMessageParams{
 		ChatID: update.Message.Chat.ID,
 		Text:   "Congrats!111 You selected \"/start\" command.",
-	})
-	if err != nil {
+	}); err != nil {
 		log.Fatalf("couldn't send message, err %v", err)
 	}
 }
