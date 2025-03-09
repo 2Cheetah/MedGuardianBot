@@ -15,7 +15,8 @@ func main() {
 	defer cancel()
 
 	apiToken := os.Getenv("API_TOKEN")
+	dbPath := "users.db"
 
-	app.Run(apiToken, ctx)
+	app.Run(ctx, apiToken, dbPath)
 
 }
