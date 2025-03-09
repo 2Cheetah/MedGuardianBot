@@ -15,3 +15,7 @@ func NewUserService(repo domain.UserRepository) *UserService {
 func (us *UserService) CreateUser(user *domain.User) error {
 	return us.repo.CreateUser(user)
 }
+
+func (us *UserService) GetUser(id int64) (*domain.User, error) {
+	return us.repo.GetUser(id)
+}

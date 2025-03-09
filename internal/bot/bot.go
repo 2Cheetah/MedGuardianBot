@@ -71,13 +71,21 @@ func (tb *TelegramBot) handleStart(ctx context.Context, b *bot.Bot, update *mode
 
 	slog.Info("message from", "user", user)
 
-	// save user info
-	if err := tb.UserService.CreateUser(user); err != nil {
-		slog.Warn("couldn't create a user", "user data", user)
+	// check if user exists in DB and save user info
+	u, err := tb.UserService.GetUser(update.Message.From.ID)
+	if err != nil {
+		slog.Warn("couldn't get a user from DB", "err", err)
+	}
+	// if no user returned, create a user
+	if u == nil {
+		slog.Info("creating a user...", "user", user)
+		if err := tb.UserService.CreateUser(user); err != nil {
+			slog.Warn("couldn't create a user", "user data", user)
+		}
 	}
 
 	// send message to the user
-	_, err := b.SendMessage(ctx, &bot.SendMessageParams{
+	_, err = b.SendMessage(ctx, &bot.SendMessageParams{
 		ChatID: update.Message.Chat.ID,
 		Text:   "Congrats!111 You selected \"/start\" command.",
 	})
