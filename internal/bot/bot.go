@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"log/slog"
 
-	"github.com/2Cheetah/MedGuardianBot/internal/domain"
 	"github.com/2Cheetah/MedGuardianBot/internal/service"
 	"github.com/go-telegram/bot"
 	"github.com/go-telegram/bot/models"
@@ -63,38 +62,6 @@ func handleEcho(ctx context.Context, b *bot.Bot, update *models.Update) {
 		Text:   update.Message.Text,
 	})
 	if err != nil {
-		slog.Warn("couldn't send message", "error", err)
-	}
-}
-
-func (tb *TelegramBot) handleStart(ctx context.Context, b *bot.Bot, update *models.Update) {
-	// get user info
-	id := update.Message.From.ID
-	user := &domain.User{
-		FirstName: update.Message.From.FirstName,
-		LastName:  update.Message.From.LastName,
-		Username:  update.Message.From.Username,
-		ID:        id,
-	}
-
-	slog.Info("message from", "user", user)
-
-	// check if user exists in DB and save user info
-	u, err := tb.UserService.GetUser(id)
-	if err != nil {
-		slog.Warn("there was an error while trying to get a user", "error", err)
-	}
-	if u == nil {
-		if err := tb.UserService.CreateUser(user); err != nil {
-			slog.Warn("couldn't create a user", "user data", user)
-		}
-	}
-
-	// send message to the user
-	if _, err := b.SendMessage(ctx, &bot.SendMessageParams{
-		ChatID: update.Message.Chat.ID,
-		Text:   "Congrats!111 You selected \"/start\" command.",
-	}); err != nil {
 		slog.Warn("couldn't send message", "error", err)
 	}
 }
