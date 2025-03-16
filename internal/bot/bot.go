@@ -5,7 +5,6 @@ package bot
 import (
 	"context"
 	"fmt"
-	"log"
 	"log/slog"
 
 	"github.com/2Cheetah/MedGuardianBot/internal/domain"
@@ -40,6 +39,14 @@ func (tb *TelegramBot) Start(ctx context.Context) {
 	tb.bot.Start(ctx)
 }
 
+// Stop gracefully stops the bot
+func (tb *TelegramBot) Stop(ctx context.Context) error {
+	slog.Debug("stopping bot...")
+	// The bot will stop when its context is canceled
+	// Any additional cleanup logic can be added here if needed
+	return nil
+}
+
 func (tb *TelegramBot) RegisterHandler(pattern string, h bot.HandlerFunc) {
 	id := tb.bot.RegisterHandler(
 		bot.HandlerTypeMessageText,
@@ -56,7 +63,7 @@ func handleEcho(ctx context.Context, b *bot.Bot, update *models.Update) {
 		Text:   update.Message.Text,
 	})
 	if err != nil {
-		log.Fatalf("couldn't send message, err %v", err)
+		slog.Warn("couldn't send message", "error", err)
 	}
 }
 
@@ -88,6 +95,6 @@ func (tb *TelegramBot) handleStart(ctx context.Context, b *bot.Bot, update *mode
 		ChatID: update.Message.Chat.ID,
 		Text:   "Congrats!111 You selected \"/start\" command.",
 	}); err != nil {
-		log.Fatalf("couldn't send message, err %v", err)
+		slog.Warn("couldn't send message", "error", err)
 	}
 }
