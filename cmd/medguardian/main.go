@@ -23,7 +23,7 @@ func main() {
 		slog.Error("API_TOKEN environment variable is required")
 		os.Exit(1)
 	}
-	dbPath := "users.db"
+	dbPath := "medguardian.db"
 
 	// Initialize the application
 	application, err := app.NewApp(apiToken, dbPath)

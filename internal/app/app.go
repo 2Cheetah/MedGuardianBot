@@ -38,7 +38,7 @@ func NewApp(apiToken string, dbPath string) (*App, error) {
 		return nil, fmt.Errorf("migration failed: %w", err)
 	}
 
-	userRepo := repository.NewSQLiteUserRepository(db)
+	userRepo := repository.NewRepository(db)
 	userService := service.NewUserService(userRepo)
 	telegramBot, err := bot.NewTelegramBot(apiToken, userService)
 	if err != nil {

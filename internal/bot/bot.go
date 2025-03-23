@@ -9,7 +9,6 @@ import (
 
 	"github.com/2Cheetah/MedGuardianBot/internal/service"
 	"github.com/go-telegram/bot"
-	"github.com/go-telegram/bot/models"
 )
 
 type TelegramBot struct {
@@ -19,7 +18,7 @@ type TelegramBot struct {
 
 func NewTelegramBot(apiToken string, us *service.UserService) (*TelegramBot, error) {
 	opts := []bot.Option{
-		bot.WithDefaultHandler(handleEcho),
+		bot.WithDefaultHandler(handleArbitraryText),
 	}
 	bot, err := bot.New(apiToken, opts...)
 	if err != nil {
@@ -33,7 +32,8 @@ func NewTelegramBot(apiToken string, us *service.UserService) (*TelegramBot, err
 
 func (tb *TelegramBot) Start(ctx context.Context) {
 	slog.Debug("registering handlers...")
-	tb.RegisterHandler("/start", tb.handleStart)
+	tb.RegisterHandlerExactMatch("/start", tb.handleStart)
+	tb.RegisterHandlerExactMatch("/create_notification", tb.handleCreateNotification)
 	slog.Debug("starting bot...")
 	tb.bot.Start(ctx)
 }
@@ -46,7 +46,7 @@ func (tb *TelegramBot) Stop(ctx context.Context) error {
 	return nil
 }
 
-func (tb *TelegramBot) RegisterHandler(pattern string, h bot.HandlerFunc) {
+func (tb *TelegramBot) RegisterHandlerExactMatch(pattern string, h bot.HandlerFunc) {
 	id := tb.bot.RegisterHandler(
 		bot.HandlerTypeMessageText,
 		pattern,
@@ -54,14 +54,4 @@ func (tb *TelegramBot) RegisterHandler(pattern string, h bot.HandlerFunc) {
 		h,
 	)
 	slog.Debug("registered handler", "pattern", pattern, "id", id)
-}
-
-func handleEcho(ctx context.Context, b *bot.Bot, update *models.Update) {
-	_, err := b.SendMessage(ctx, &bot.SendMessageParams{
-		ChatID: update.Message.Chat.ID,
-		Text:   update.Message.Text,
-	})
-	if err != nil {
-		slog.Warn("couldn't send message", "error", err)
-	}
 }
