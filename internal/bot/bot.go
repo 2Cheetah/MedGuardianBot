@@ -12,11 +12,12 @@ import (
 )
 
 type TelegramBot struct {
-	bot         *bot.Bot
-	UserService *service.UserService
+	bot           *bot.Bot
+	UserService   *service.UserService
+	DialogService *service.DialogService
 }
 
-func NewTelegramBot(apiToken string, us *service.UserService) (*TelegramBot, error) {
+func NewTelegramBot(apiToken string, us *service.UserService, ds *service.DialogService) (*TelegramBot, error) {
 	opts := []bot.Option{
 		bot.WithDefaultHandler(handleArbitraryText),
 	}
@@ -25,8 +26,9 @@ func NewTelegramBot(apiToken string, us *service.UserService) (*TelegramBot, err
 		return nil, fmt.Errorf("couldn't create bot, error %w", err)
 	}
 	return &TelegramBot{
-		bot:         bot,
-		UserService: us,
+		bot:           bot,
+		UserService:   us,
+		DialogService: ds,
 	}, nil
 }
 

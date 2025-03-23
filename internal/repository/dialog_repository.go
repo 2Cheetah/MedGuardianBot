@@ -7,11 +7,12 @@ import (
 	"github.com/2Cheetah/MedGuardianBot/internal/domain"
 )
 
-func (r *Repository) CreateDialog(userId int64, command string) error {
+func (r *Repository) CreateDialog(userID int64, command string) error {
+	slog.Info("creating dialog", "userID", userID, "command", command)
 	q := "INSERT INTO dialogs (user_id, command) VALUES (?, ?)"
 	_, err := r.db.Exec(
 		q,
-		userId,
+		userID,
 		command,
 	)
 	if err != nil {

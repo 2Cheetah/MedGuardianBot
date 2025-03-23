@@ -38,9 +38,10 @@ func NewApp(apiToken string, dbPath string) (*App, error) {
 		return nil, fmt.Errorf("migration failed: %w", err)
 	}
 
-	userRepo := repository.NewRepository(db)
-	userService := service.NewUserService(userRepo)
-	telegramBot, err := bot.NewTelegramBot(apiToken, userService)
+	repo := repository.NewRepository(db)
+	userService := service.NewUserService(repo)
+	dialogService := service.NewDialogService(repo)
+	telegramBot, err := bot.NewTelegramBot(apiToken, userService, dialogService)
 	if err != nil {
 		return nil, fmt.Errorf("failed to initialize bot: %w", err)
 	}

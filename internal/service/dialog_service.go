@@ -2,6 +2,7 @@ package service
 
 import (
 	"errors"
+	"log/slog"
 
 	"github.com/2Cheetah/MedGuardianBot/internal/domain"
 )
@@ -17,6 +18,7 @@ func NewDialogService(repo domain.DialogRepository) *DialogService {
 }
 
 func (ds *DialogService) CreateDialog(dialog *domain.Dialog) error {
+	slog.Info("calling repository to create a dialog", "dialog", dialog)
 	return ds.repo.CreateDialog(dialog.UserID, string(dialog.Command))
 }
 
