@@ -7,8 +7,8 @@ import (
 	"github.com/go-telegram/bot/models"
 )
 
-func handleArbitraryText(ctx context.Context, b *bot.Bot, update *models.Update) {
-	// Check dialog state, if any is not in IDLE continue
+func (tb *TelegramBot) handleArbitraryText(ctx context.Context, b *bot.Bot, update *models.Update) {
+	// Check dialogs states, if any is in STARTED state
 
-	// If all dialogs in IDLE state, send list of available actions
+	// If all dialogs in S state, send list of available actions
 }

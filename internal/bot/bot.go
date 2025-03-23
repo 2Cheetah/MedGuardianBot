@@ -18,18 +18,19 @@ type TelegramBot struct {
 }
 
 func NewTelegramBot(apiToken string, us *service.UserService, ds *service.DialogService) (*TelegramBot, error) {
+	tb := &TelegramBot{
+		UserService:   us,
+		DialogService: ds,
+	}
 	opts := []bot.Option{
-		bot.WithDefaultHandler(handleArbitraryText),
+		bot.WithDefaultHandler(tb.handleArbitraryText),
 	}
 	bot, err := bot.New(apiToken, opts...)
 	if err != nil {
 		return nil, fmt.Errorf("couldn't create bot, error %w", err)
 	}
-	return &TelegramBot{
-		bot:           bot,
-		UserService:   us,
-		DialogService: ds,
-	}, nil
+	tb.bot = bot
+	return tb, nil
 }
 
 func (tb *TelegramBot) Start(ctx context.Context) {
