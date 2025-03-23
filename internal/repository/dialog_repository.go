@@ -22,8 +22,8 @@ func (r *Repository) CreateDialog(userID int64, command string) error {
 }
 
 func (r *Repository) GetActiveDialogByUserId(userID int64) (*domain.Dialog, error) {
-	q := "SELECT * FROM dialogs WHERE user_id = ? AND state = 'STARTED'"
-	rows, err := r.db.Query(q, userID)
+	q := "SELECT * FROM dialogs WHERE user_id = ? AND state = ?"
+	rows, err := r.db.Query(q, userID, domain.DialogStatusStarted)
 	if err != nil {
 		return nil, fmt.Errorf("couldn't get active dialogs by userID, error: %w", err)
 	}
