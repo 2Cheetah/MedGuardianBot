@@ -17,11 +17,11 @@ const (
 )
 
 type Dialog struct {
-	ID        int64
-	UserID    int64
-	State     DialogState
-	Command   DialogCommand
-	CreatedAt time.Time
-	UpdatedAt time.Time
-	Context   string
+	ID        int64         `db:"id"`
+	UserID    int64         `db:"user_id"`
+	State     DialogState   `db:"state"`
+	Command   DialogCommand `db:"command"`
+	CreatedAt time.Time     `db:"created_at"`
+	UpdatedAt time.Time     `db:"updated_at"`
+	Context   string        `db:"context"`
 }

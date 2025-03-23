@@ -21,18 +21,26 @@ func (r *Repository) CreateDialog(userID int64, command string) error {
 	return nil
 }
 
-func (r *Repository) GetActiveDialogByUserId(userId int64) (*domain.Dialog, error) {
-	q := "SELECT * FROM dialogs WHERE user_id = ? AND state = 'CREATED'"
-	rows, err := r.db.Query(q, userId)
+func (r *Repository) GetActiveDialogByUserId(userID int64) (*domain.Dialog, error) {
+	q := "SELECT * FROM dialogs WHERE user_id = ? AND state = 'STARTED'"
+	rows, err := r.db.Query(q, userID)
 	if err != nil {
-		return nil, fmt.Errorf("couldn't get active dialogs by userId, error: %w", err)
+		return nil, fmt.Errorf("couldn't get active dialogs by userID, error: %w", err)
 	}
 	defer rows.Close()
 
 	var dialog domain.Dialog
 
 	if rows.Next() {
-		if err := rows.Scan(&dialog); err != nil {
+		if err := rows.Scan(
+			&dialog.ID,
+			&dialog.UserID,
+			&dialog.State,
+			&dialog.CreatedAt,
+			&dialog.UpdatedAt,
+			&dialog.Command,
+			&dialog.Context,
+		); err != nil {
 			return nil, fmt.Errorf("couldn't scan DB row to dialog, error: %w", err)
 		}
 	} else {
@@ -42,7 +50,7 @@ func (r *Repository) GetActiveDialogByUserId(userId int64) (*domain.Dialog, erro
 	if !rows.Next() {
 		return &dialog, nil
 	} else {
-		return nil, fmt.Errorf("more than one STARTED dialogs found for userId: %d", userId)
+		return nil, fmt.Errorf("more than one STARTED dialogs found for userID: %d", userID)
 	}
 }
 

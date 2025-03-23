@@ -14,7 +14,7 @@ func (tb *TelegramBot) handleCreateNotification(ctx context.Context, b *bot.Bot,
 	// Stop any non-finished dialogs (non-IDLE state)
 
 	msg := "Alright! Let's create a notification. What is the schedule? For instance, \"daily 9am\""
-	sendMsg(ctx, b, update.Message.From.ID, msg)
+	sendMsg(ctx, b, update.Message.Chat.ID, msg)
 
 	slog.Info("calling dialog service to create a dialog")
 	d := domain.Dialog{

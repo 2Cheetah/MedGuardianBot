@@ -5,6 +5,6 @@ CREATE TABLE IF NOT EXISTS dialogs (
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     command TEXT NOT NULL, -- create_notification, add_medicine, etc.
-    context TEXT, -- store intermediate data
+    context TEXT NOT NULL DEFAULT "", -- store intermediate data
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
