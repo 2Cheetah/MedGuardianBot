@@ -11,18 +11,18 @@ import (
 )
 
 type DialogService struct {
-	repo          domain.DialogRepository
-	textProcessor TextProcessor
+	repo              domain.DialogRepository
+	scheduleProcessor ScheduleProcessor
 }
 
-type TextProcessor interface {
-	ParseSchedule(text string) (string, error)
+type ScheduleProcessor interface {
+	ParseSchedule(schedule string) (string, error)
 }
 
-func NewDialogService(repo domain.DialogRepository, tp TextProcessor) *DialogService {
+func NewDialogService(repo domain.DialogRepository, sp ScheduleProcessor) *DialogService {
 	return &DialogService{
-		repo:          repo,
-		textProcessor: tp,
+		repo:              repo,
+		scheduleProcessor: sp,
 	}
 }
 
@@ -56,7 +56,7 @@ func (ds *DialogService) HandleDialog(d *domain.Dialog) (string, error) {
 		switch dDB.Command {
 		case "create_notification":
 			if dDB.Context == "" {
-				s, _ := ds.textProcessor.ParseSchedule(d.Context)
+				s, _ := ds.scheduleProcessor.ParseSchedule(d.Context)
 				s = strings.TrimSpace(s)
 				slog.Info("parsed schedule", "crontab", s)
 				dDB.Context = "schedule: " + s

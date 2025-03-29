@@ -2,16 +2,15 @@ package crontabninja
 
 import (
 	"bytes"
-	"context"
 	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
 )
 
-const (
-	baseURL = "https://cronly.app/api/ai/generate"
-)
+// const (
+// 	baseURL = "https://cronly.app/api/ai/generate"
+// )
 
 type Client struct {
 	baseURL string
@@ -33,7 +32,7 @@ type Response struct {
 	Crontab string `json:"crontab"`
 }
 
-func (cnc *Client) ConvertTextToCrontab(ctx context.Context, schedule string) (string, error) {
+func (cnc *Client) ParseSchedule(schedule string) (string, error) {
 	req := Request{
 		Schedule: schedule,
 	}
@@ -42,7 +41,7 @@ func (cnc *Client) ConvertTextToCrontab(ctx context.Context, schedule string) (s
 		return "", fmt.Errorf("failed to marshal request: %w", err)
 	}
 
-	httpReq, err := http.NewRequestWithContext(ctx, "POST", baseURL, bytes.NewReader(jsonBody))
+	httpReq, err := http.NewRequest("POST", cnc.baseURL, bytes.NewReader(jsonBody))
 	if err != nil {
 		return "", fmt.Errorf("failed to create request: %w", err)
 	}

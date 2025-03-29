@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"github.com/2Cheetah/MedGuardianBot/internal/bot"
-	"github.com/2Cheetah/MedGuardianBot/internal/groq"
+	crontabninja "github.com/2Cheetah/MedGuardianBot/internal/crontabNinja"
 	"github.com/2Cheetah/MedGuardianBot/internal/repository"
 	"github.com/2Cheetah/MedGuardianBot/internal/service"
 
@@ -40,10 +40,9 @@ func NewApp(apiToken string, dbPath string) (*App, error) {
 	}
 
 	repo := repository.NewRepository(db)
-	groqApiKey := os.Getenv("GROQ_API_KEY")
-	textProcessor := groq.NewClient(groqApiKey)
 	userService := service.NewUserService(repo)
-	dialogService := service.NewDialogService(repo, textProcessor)
+	scheduleProcessor := crontabninja.NewClient("https://cronly.app/api/ai/generate")
+	dialogService := service.NewDialogService(repo, scheduleProcessor)
 	telegramBot, err := bot.NewTelegramBot(apiToken, userService, dialogService)
 	if err != nil {
 		return nil, fmt.Errorf("failed to initialize bot: %w", err)
