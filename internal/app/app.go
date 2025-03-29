@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/2Cheetah/MedGuardianBot/internal/bot"
+	"github.com/2Cheetah/MedGuardianBot/internal/groq"
 	"github.com/2Cheetah/MedGuardianBot/internal/repository"
 	"github.com/2Cheetah/MedGuardianBot/internal/service"
 
@@ -39,8 +40,10 @@ func NewApp(apiToken string, dbPath string) (*App, error) {
 	}
 
 	repo := repository.NewRepository(db)
+	groqApiKey := os.Getenv("GROQ_API_KEY")
+	textProcessor := groq.NewClient(groqApiKey)
 	userService := service.NewUserService(repo)
-	dialogService := service.NewDialogService(repo)
+	dialogService := service.NewDialogService(repo, textProcessor)
 	telegramBot, err := bot.NewTelegramBot(apiToken, userService, dialogService)
 	if err != nil {
 		return nil, fmt.Errorf("failed to initialize bot: %w", err)

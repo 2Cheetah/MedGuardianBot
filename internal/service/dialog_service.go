@@ -4,18 +4,25 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
+	"strings"
 	"time"
 
 	"github.com/2Cheetah/MedGuardianBot/internal/domain"
 )
 
 type DialogService struct {
-	repo domain.DialogRepository
+	repo          domain.DialogRepository
+	textProcessor TextProcessor
 }
 
-func NewDialogService(repo domain.DialogRepository) *DialogService {
+type TextProcessor interface {
+	ParseSchedule(text string) (string, error)
+}
+
+func NewDialogService(repo domain.DialogRepository, tp TextProcessor) *DialogService {
 	return &DialogService{
-		repo: repo,
+		repo:          repo,
+		textProcessor: tp,
 	}
 }
 
@@ -49,7 +56,10 @@ func (ds *DialogService) HandleDialog(d *domain.Dialog) (string, error) {
 		switch dDB.Command {
 		case "create_notification":
 			if dDB.Context == "" {
-				dDB.Context = "schedule: " + d.Context
+				s, _ := ds.textProcessor.ParseSchedule(d.Context)
+				s = strings.TrimSpace(s)
+				slog.Info("parsed schedule", "crontab", s)
+				dDB.Context = "schedule: " + s
 				dDB.UpdatedAt = time.Now().UTC()
 				if err := ds.repo.UpdateActiveDialog(dDB); err != nil {
 					slog.Error("couldn't UpdateActiveDialog from handle_arbitraty_text.go", "error", err)
