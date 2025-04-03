@@ -1,6 +1,7 @@
 package service
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"log/slog"
@@ -11,18 +12,25 @@ import (
 )
 
 type DialogService struct {
-	repo              domain.DialogRepository
-	scheduleProcessor ScheduleProcessor
+	repo                domain.DialogRepository
+	scheduleProcessor   ScheduleProcessor
+	notificationService NotificationService
+}
+
+type DialogCreateNotification struct {
+	Schedule string `json:"schedule"`
+	Text     string `json:"text"`
 }
 
 type ScheduleProcessor interface {
 	ParseSchedule(schedule string) (string, error)
 }
 
-func NewDialogService(repo domain.DialogRepository, sp ScheduleProcessor) *DialogService {
+func NewDialogService(repo domain.DialogRepository, sp ScheduleProcessor, ns NotificationService) *DialogService {
 	return &DialogService{
-		repo:              repo,
-		scheduleProcessor: sp,
+		repo:                repo,
+		scheduleProcessor:   sp,
+		notificationService: ns,
 	}
 }
 
@@ -59,7 +67,16 @@ func (ds *DialogService) HandleDialog(d *domain.Dialog) (string, error) {
 				s, _ := ds.scheduleProcessor.ParseSchedule(d.Context)
 				s = strings.TrimSpace(s)
 				slog.Info("parsed schedule", "crontab", s)
-				dDB.Context = "schedule: " + s
+				dialogContext := DialogCreateNotification{
+					Schedule: s,
+				}
+				contextData, err := json.Marshal(dialogContext)
+				if err != nil {
+					return "", fmt.Errorf("couldn't marshal dialog to create notification, error: %w", err)
+				}
+				contextString := string(contextData)
+
+				dDB.Context = contextString
 				dDB.UpdatedAt = time.Now().UTC()
 				if err := ds.repo.UpdateActiveDialog(dDB); err != nil {
 					slog.Error("couldn't UpdateActiveDialog from handle_arbitraty_text.go", "error", err)
@@ -67,11 +84,37 @@ func (ds *DialogService) HandleDialog(d *domain.Dialog) (string, error) {
 				msg := "What do you want me notify you about? What is the notificaiton text?"
 				return msg, nil
 			} else {
-				dDB.Context += " text: " + d.Context
+				var dialogContext DialogCreateNotification
+				if err := json.Unmarshal([]byte(dDB.Context), &dialogContext); err != nil {
+					return "", fmt.Errorf("couldn't unmarshal context, error: %w", err)
+				}
+				dialogContext.Text = d.Context
+				contextData, err := json.Marshal(dialogContext)
+				if err != nil {
+					return "", fmt.Errorf("couldn't marshal dialog to create notification, error: %w", err)
+				}
+				contextString := string(contextData)
+				dDB.Context = contextString
 				dDB.UpdatedAt = time.Now().UTC()
 				dDB.State = domain.DialogStatusFinished
 				if err := ds.repo.UpdateActiveDialog(dDB); err != nil {
 					slog.Error("couldn't UpdateActiveDialog from handle_arbitraty_text.go", "error", err)
+				}
+
+				notification := &domain.Notification{
+					Status:   domain.NotificationStatusActive,
+					UserID:   d.UserID,
+					ChatID:   d.UserID,
+					Text:     dialogContext.Text,
+					Schedule: dialogContext.Schedule,
+					Until:    time.Now(),
+					Next:     time.Now(),
+				}
+
+				slog.Info("about to create notification", "notification", notification)
+
+				if err = ds.notificationService.CreateNotification(notification); err != nil {
+					return "", fmt.Errorf("couldn't create notification, error: %w", err)
 				}
 				msg := fmt.Sprintf("Success! Notification created! %s", dDB.Context)
 				return msg, nil

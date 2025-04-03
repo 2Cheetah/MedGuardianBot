@@ -1,11 +1,12 @@
 CREATE TABLE IF NOT EXISTS notifications (
-    id SERIAL PRIMARY KEY,
+    id INTEGER PRIMARY KEY,
+    status TEXT NOT NULL,
     user_id INTEGER NOT NULL,
-    state TEXT NOT NULL,
+    chat_id INTEGER NOT NULL,
+    text TEXT NOT NULL,
     schedule TEXT NOT NULL,
-    next_notification TIMESTAMP NOT NULL,
-    message TEXT NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    until TIMESTAMP,
+    next TIMESTAMP NOT NULL,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );

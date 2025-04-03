@@ -12,12 +12,12 @@ const (
 
 type Notification struct {
 	ID        int64
-	Status    string
+	Status    NotificationStatus
 	UserID    int64
 	ChatID    int64
 	Text      string
 	Schedule  string
 	CreatedAt time.Time
-	To        time.Time
+	Until     time.Time
 	Next      time.Time
 }

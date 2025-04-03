@@ -9,14 +9,15 @@ import (
 
 func (r *Repository) CreateNotification(n *domain.Notification) error {
 	slog.Info("creating notificaiton", "notificaiton", n)
-	q := "INSERT INTO notifications (user_id, chat_id, txt, schedule, to, next) VALUES (?, ?, ?, ?)"
+	q := "INSERT INTO notifications (status, user_id, chat_id, text, schedule, until, next) VALUES (?, ?, ?, ?, ?, ?, ?)"
 	_, err := r.db.Exec(
 		q,
+		n.Status,
 		n.UserID,
 		n.ChatID,
 		n.Text,
 		n.Schedule,
-		n.To,
+		n.Until,
 		n.Next,
 	)
 	if err != nil {
@@ -45,7 +46,7 @@ func (r *Repository) GetNotificationsByStatus(status domain.NotificationStatus) 
 			&notificaiton.Text,
 			&notificaiton.Schedule,
 			&notificaiton.CreatedAt,
-			&notificaiton.To,
+			&notificaiton.Until,
 			&notificaiton.Next,
 		); err != nil {
 			return nil, fmt.Errorf("couldn't scan rows, error: %w", err)
@@ -75,7 +76,7 @@ func (r *Repository) GetActiveNotificationsByUserID(userID int64) ([]*domain.Not
 			&notification.Text,
 			&notification.Schedule,
 			&notification.CreatedAt,
-			&notification.To,
+			&notification.Until,
 			&notification.Next,
 		); err != nil {
 			return nil, fmt.Errorf("couldn't scan DB row to notification, error: %w", err)
