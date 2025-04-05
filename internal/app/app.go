@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/2Cheetah/MedGuardianBot/internal/bot"
+	crontabninja "github.com/2Cheetah/MedGuardianBot/internal/crontabNinja"
 	"github.com/2Cheetah/MedGuardianBot/internal/repository"
 	"github.com/2Cheetah/MedGuardianBot/internal/service"
 
@@ -38,9 +39,12 @@ func NewApp(apiToken string, dbPath string) (*App, error) {
 		return nil, fmt.Errorf("migration failed: %w", err)
 	}
 
-	userRepo := repository.NewSQLiteUserRepository(db)
-	userService := service.NewUserService(userRepo)
-	telegramBot, err := bot.NewTelegramBot(apiToken, userService)
+	repo := repository.NewRepository(db)
+	userService := service.NewUserService(repo)
+	scheduleProcessor := crontabninja.NewClient("https://cronly.app/api/ai/generate")
+	notificationService := service.NewNotificationService(repo)
+	dialogService := service.NewDialogService(repo, scheduleProcessor, *notificationService)
+	telegramBot, err := bot.NewTelegramBot(apiToken, userService, dialogService)
 	if err != nil {
 		return nil, fmt.Errorf("failed to initialize bot: %w", err)
 	}

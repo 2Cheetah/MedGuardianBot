@@ -18,12 +18,12 @@ func main() {
 	defer cancel()
 
 	// Get configuration
-	apiToken := os.Getenv("API_TOKEN")
+	apiToken := os.Getenv("TG_BOT_API_TOKEN")
 	if apiToken == "" {
 		slog.Error("API_TOKEN environment variable is required")
 		os.Exit(1)
 	}
-	dbPath := "users.db"
+	dbPath := "medguardian.db"
 
 	// Initialize the application
 	application, err := app.NewApp(apiToken, dbPath)

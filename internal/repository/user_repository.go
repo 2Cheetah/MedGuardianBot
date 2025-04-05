@@ -1,23 +1,13 @@
-// internal/repository/sqlite_user_repository.go
 package repository
 
 import (
-	"database/sql"
 	"fmt"
 	"log/slog"
 
 	"github.com/2Cheetah/MedGuardianBot/internal/domain"
 )
 
-type SQLiteUserRepository struct {
-	db *sql.DB
-}
-
-func NewSQLiteUserRepository(db *sql.DB) *SQLiteUserRepository {
-	return &SQLiteUserRepository{db: db}
-}
-
-func (r *SQLiteUserRepository) CreateUser(user *domain.User) error {
+func (r *Repository) CreateUser(user *domain.User) error {
 	q := "INSERT INTO users (id, first_name, last_name, username) VALUES (?, ?, ?, ?) ON CONFLICT(id) DO NOTHING"
 	_, err := r.db.Exec(
 		q,
@@ -29,7 +19,7 @@ func (r *SQLiteUserRepository) CreateUser(user *domain.User) error {
 	return err
 }
 
-func (r *SQLiteUserRepository) GetUser(id int64) (*domain.User, error) {
+func (r *Repository) GetUser(id int64) (*domain.User, error) {
 	slog.Info("querying user with", "id", id)
 	rows, err := r.db.Query("SELECT first_name, last_name, username  FROM users WHERE id = ?", id)
 	slog.Info("found", "rows", rows)

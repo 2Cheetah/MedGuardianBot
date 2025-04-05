@@ -7,33 +7,38 @@ import (
 	"fmt"
 	"log/slog"
 
+	"github.com/2Cheetah/MedGuardianBot/internal/domain"
 	"github.com/2Cheetah/MedGuardianBot/internal/service"
 	"github.com/go-telegram/bot"
 	"github.com/go-telegram/bot/models"
 )
 
 type TelegramBot struct {
-	bot         *bot.Bot
-	UserService *service.UserService
+	bot           *bot.Bot
+	UserService   *service.UserService
+	DialogService *service.DialogService
 }
 
-func NewTelegramBot(apiToken string, us *service.UserService) (*TelegramBot, error) {
+func NewTelegramBot(apiToken string, us *service.UserService, ds *service.DialogService) (*TelegramBot, error) {
+	tb := &TelegramBot{
+		UserService:   us,
+		DialogService: ds,
+	}
 	opts := []bot.Option{
-		bot.WithDefaultHandler(handleEcho),
+		bot.WithDefaultHandler(tb.handleArbitraryText),
 	}
 	bot, err := bot.New(apiToken, opts...)
 	if err != nil {
 		return nil, fmt.Errorf("couldn't create bot, error %w", err)
 	}
-	return &TelegramBot{
-		bot:         bot,
-		UserService: us,
-	}, nil
+	tb.bot = bot
+	return tb, nil
 }
 
 func (tb *TelegramBot) Start(ctx context.Context) {
 	slog.Debug("registering handlers...")
-	tb.RegisterHandler("/start", tb.handleStart)
+	tb.RegisterHandlerExactMatch("/start", tb.handleStart)
+	tb.RegisterHandlerExactMatch("/create_notification", tb.handleCreateNotification)
 	slog.Debug("starting bot...")
 	tb.bot.Start(ctx)
 }
@@ -46,7 +51,7 @@ func (tb *TelegramBot) Stop(ctx context.Context) error {
 	return nil
 }
 
-func (tb *TelegramBot) RegisterHandler(pattern string, h bot.HandlerFunc) {
+func (tb *TelegramBot) RegisterHandlerExactMatch(pattern string, h bot.HandlerFunc) {
 	id := tb.bot.RegisterHandler(
 		bot.HandlerTypeMessageText,
 		pattern,
@@ -56,12 +61,19 @@ func (tb *TelegramBot) RegisterHandler(pattern string, h bot.HandlerFunc) {
 	slog.Debug("registered handler", "pattern", pattern, "id", id)
 }
 
-func handleEcho(ctx context.Context, b *bot.Bot, update *models.Update) {
-	_, err := b.SendMessage(ctx, &bot.SendMessageParams{
-		ChatID: update.Message.Chat.ID,
-		Text:   update.Message.Text,
-	})
-	if err != nil {
-		slog.Warn("couldn't send message", "error", err)
+func (tb *TelegramBot) handleArbitraryText(ctx context.Context, b *bot.Bot, update *models.Update) {
+	userID := update.Message.From.ID
+	context := update.Message.Text
+	dialog := &domain.Dialog{
+		UserID:  userID,
+		Context: context,
 	}
+	msg, err := tb.DialogService.HandleDialog(dialog)
+	if err != nil {
+		slog.Error("couldn't handleArbitraryText", "error", err)
+		msg := fmt.Sprintf("Error while handling text:\n%s", update.Message.Text)
+		sendMsg(ctx, b, update.Message.Chat.ID, msg)
+		return
+	}
+	sendMsg(ctx, b, update.Message.Chat.ID, msg)
 }

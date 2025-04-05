@@ -8,9 +8,9 @@ import (
 	"github.com/go-telegram/bot/models"
 )
 
-func sendMsg(ctx context.Context, b *bot.Bot, id int64, msg string) {
+func sendMsg(ctx context.Context, b *bot.Bot, chatID int64, msg string) {
 	if _, err := b.SendMessage(ctx, &bot.SendMessageParams{
-		ChatID: id,
+		ChatID: chatID,
 		Text:   msg,
 	}); err != nil {
 		slog.Warn("couldn't send message", "error", err)
@@ -25,3 +25,8 @@ func sendTypingAction(ctx context.Context, b *bot.Bot, id int64) {
 		slog.Warn("couldn't send aciton \"typing\"", "error", err)
 	}
 }
+
+// func (tb *TelegramBot) cancelDialog(userID int64) error {
+// 	// change all dialog states to FINISHED for the user
+// 	return nil
+// }
