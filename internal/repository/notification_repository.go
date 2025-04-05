@@ -8,7 +8,7 @@ import (
 )
 
 func (r *Repository) CreateNotification(n *domain.Notification) error {
-	slog.Info("creating notificaiton", "notificaiton", n)
+	slog.Info("creating notification", "notification", n)
 	q := "INSERT INTO notifications (status, user_id, chat_id, text, schedule, until, next) VALUES (?, ?, ?, ?, ?, ?, ?)"
 	_, err := r.db.Exec(
 		q,
