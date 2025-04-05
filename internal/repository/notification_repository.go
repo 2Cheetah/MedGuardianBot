@@ -37,17 +37,17 @@ func (r *Repository) GetNotificationsByStatus(status domain.NotificationStatus) 
 	var notifications []*domain.Notification
 
 	for rows.Next() {
-		var notificaiton domain.Notification
+		var notification domain.Notification
 		if err := rows.Scan(
-			&notificaiton.ID,
-			&notificaiton.Status,
-			&notificaiton.UserID,
-			&notificaiton.ChatID,
-			&notificaiton.Text,
-			&notificaiton.Schedule,
-			&notificaiton.CreatedAt,
-			&notificaiton.Until,
-			&notificaiton.Next,
+			&notification.ID,
+			&notification.Status,
+			&notification.UserID,
+			&notification.ChatID,
+			&notification.Text,
+			&notification.Schedule,
+			&notification.CreatedAt,
+			&notification.Until,
+			&notification.Next,
 		); err != nil {
 			return nil, fmt.Errorf("couldn't scan rows, error: %w", err)
 		}
