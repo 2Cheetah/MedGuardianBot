@@ -23,6 +23,6 @@ func (tb *TelegramBot) handleCreateNotification(ctx context.Context, b *bot.Bot,
 		Command: "create_notification",
 	}
 	if err := tb.DialogService.CreateDialog(d); err != nil {
-		slog.Error("coulnd't create dialog", "dialog", d, "error", err)
+		slog.Error("couldn't create dialog", "dialog", d, "error", err)
 	}
 }
