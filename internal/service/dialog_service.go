@@ -81,7 +81,7 @@ func (ds *DialogService) HandleDialog(d *domain.Dialog) (string, error) {
 				if err := ds.repo.UpdateActiveDialog(dDB); err != nil {
 					slog.Error("couldn't UpdateActiveDialog from handle_arbitrary_text.go", "error", err)
 				}
-				msg := "What do you want me notify you about? What is the notificaiton text?"
+				msg := "What do you want me notify you about? What is the notification text?"
 				return msg, nil
 			} else {
 				var dialogContext DialogCreateNotification
