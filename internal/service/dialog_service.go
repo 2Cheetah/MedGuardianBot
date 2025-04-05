@@ -34,9 +34,9 @@ func NewDialogService(repo domain.DialogRepository, sp ScheduleProcessor, ns Not
 	}
 }
 
-func (ds *DialogService) CreateDialog(dialog *domain.Dialog) error {
+func (ds *DialogService) CreateDialog(dialog domain.Dialog) error {
 	slog.Info("calling repository to create a dialog", "dialog", dialog)
-	return ds.repo.CreateDialog(dialog.UserID, string(dialog.Command))
+	return ds.repo.CreateDialog(dialog)
 }
 
 func (ds *DialogService) GetActiveDialogByUserId(userID int64) (*domain.Dialog, error) {

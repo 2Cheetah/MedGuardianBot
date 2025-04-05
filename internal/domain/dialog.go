@@ -19,6 +19,7 @@ const (
 type Dialog struct {
 	ID        int64         `db:"id"`
 	UserID    int64         `db:"user_id"`
+	ChatID    int64         `db:"chat_id"`
 	State     DialogState   `db:"state"`
 	Command   DialogCommand `db:"command"`
 	CreatedAt time.Time     `db:"created_at"`

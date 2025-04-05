@@ -19,10 +19,10 @@ func (tb *TelegramBot) handleCreateNotification(ctx context.Context, b *bot.Bot,
 	slog.Info("calling dialog service to create a dialog")
 	d := domain.Dialog{
 		UserID:  update.Message.From.ID,
+		ChatID:  update.Message.Chat.ID,
 		Command: "create_notification",
-		Context: "",
 	}
-	if err := tb.DialogService.CreateDialog(&d); err != nil {
+	if err := tb.DialogService.CreateDialog(d); err != nil {
 		slog.Error("coulnd't create dialog", "dialog", d, "error", err)
 	}
 }

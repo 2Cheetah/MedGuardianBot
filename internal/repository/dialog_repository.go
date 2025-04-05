@@ -7,13 +7,14 @@ import (
 	"github.com/2Cheetah/MedGuardianBot/internal/domain"
 )
 
-func (r *Repository) CreateDialog(userID int64, command string) error {
-	slog.Info("creating dialog", "userID", userID, "command", command)
-	q := "INSERT INTO dialogs (user_id, command) VALUES (?, ?)"
+func (r *Repository) CreateDialog(d domain.Dialog) error {
+	slog.Info("creating dialog", "userID", d.UserID, "command", d.Command)
+	q := "INSERT INTO dialogs (user_id, chat_id, command) VALUES (?, ?, ?)"
 	_, err := r.db.Exec(
 		q,
-		userID,
-		command,
+		d.UserID,
+		d.ChatID,
+		d.Command,
 	)
 	if err != nil {
 		return fmt.Errorf("couldn't create a dialog, error: %w", err)
@@ -35,6 +36,7 @@ func (r *Repository) GetActiveDialogByUserId(userID int64) (*domain.Dialog, erro
 		if err := rows.Scan(
 			&dialog.ID,
 			&dialog.UserID,
+			&dialog.ChatID,
 			&dialog.State,
 			&dialog.CreatedAt,
 			&dialog.UpdatedAt,

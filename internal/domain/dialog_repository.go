@@ -1,7 +1,7 @@
 package domain
 
 type DialogRepository interface {
-	CreateDialog(userId int64, command string) error
+	CreateDialog(d Dialog) error
 	GetActiveDialogByUserId(userId int64) (*Dialog, error)
 	UpdateActiveDialog(d *Dialog) error
 }
