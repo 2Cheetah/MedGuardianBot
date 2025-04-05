@@ -79,7 +79,7 @@ func (ds *DialogService) HandleDialog(d *domain.Dialog) (string, error) {
 				dDB.Context = contextString
 				dDB.UpdatedAt = time.Now().UTC()
 				if err := ds.repo.UpdateActiveDialog(dDB); err != nil {
-					slog.Error("couldn't UpdateActiveDialog from handle_arbitraty_text.go", "error", err)
+					slog.Error("couldn't UpdateActiveDialog from handle_arbitrary_text.go", "error", err)
 				}
 				msg := "What do you want me notify you about? What is the notificaiton text?"
 				return msg, nil
