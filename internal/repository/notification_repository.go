@@ -51,7 +51,7 @@ func (r *Repository) GetNotificationsByStatus(status domain.NotificationStatus) 
 		); err != nil {
 			return nil, fmt.Errorf("couldn't scan rows, error: %w", err)
 		}
-		notifications = append(notifications, &notificaiton)
+		notifications = append(notifications, &notification)
 	}
 	return notifications, nil
 }

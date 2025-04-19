@@ -7,22 +7,23 @@ import (
 	"fmt"
 	"log/slog"
 
-	"github.com/2Cheetah/MedGuardianBot/internal/domain"
 	"github.com/2Cheetah/MedGuardianBot/internal/service"
 	"github.com/go-telegram/bot"
 	"github.com/go-telegram/bot/models"
 )
 
 type TelegramBot struct {
-	bot           *bot.Bot
-	UserService   *service.UserService
-	DialogService *service.DialogService
+	bot                    *bot.Bot
+	UserService            *service.UserService
+	NotificationFSMService *service.NotificationFSMService
+	DialogService          *service.DialogService
 }
 
-func NewTelegramBot(apiToken string, us *service.UserService, ds *service.DialogService) (*TelegramBot, error) {
+func NewTelegramBot(apiToken string, us *service.UserService, nfsms *service.NotificationFSMService, ds *service.DialogService) (*TelegramBot, error) {
 	tb := &TelegramBot{
-		UserService:   us,
-		DialogService: ds,
+		UserService:            us,
+		NotificationFSMService: nfsms,
+		DialogService:          ds,
 	}
 	opts := []bot.Option{
 		bot.WithDefaultHandler(tb.handleArbitraryText),
@@ -63,17 +64,26 @@ func (tb *TelegramBot) RegisterHandlerExactMatch(pattern string, h bot.HandlerFu
 
 func (tb *TelegramBot) handleArbitraryText(ctx context.Context, b *bot.Bot, update *models.Update) {
 	userID := update.Message.From.ID
-	context := update.Message.Text
-	dialog := &domain.Dialog{
-		UserID:  userID,
-		Context: context,
-	}
-	msg, err := tb.DialogService.HandleDialog(dialog)
+	chatID := update.Message.Chat.ID
+	input := update.Message.Text
+	msg, err := tb.NotificationFSMService.HandleInput(userID, input)
 	if err != nil {
-		slog.Error("couldn't handleArbitraryText", "error", err)
-		msg := fmt.Sprintf("Error while handling text:\n%s", update.Message.Text)
-		sendMsg(ctx, b, update.Message.Chat.ID, msg)
+		sendMsg(ctx, tb.bot, chatID, "Something went wrong")
 		return
 	}
-	sendMsg(ctx, b, update.Message.Chat.ID, msg)
+	sendMsg(ctx, tb.bot, chatID, msg)
+	// userID := update.Message.From.ID
+	// context := update.Message.Text
+	// dialog := &domain.Dialog{
+	// 	UserID:  userID,
+	// 	Context: context,
+	// }
+	// msg, err := tb.DialogService.HandleDialog(dialog)
+	// if err != nil {
+	// 	slog.Error("couldn't handleArbitraryText", "error", err)
+	// 	msg := fmt.Sprintf("Error while handling text:\n%s", update.Message.Text)
+	// 	sendMsg(ctx, b, update.Message.Chat.ID, msg)
+	// 	return
+	// }
+	// sendMsg(ctx, b, update.Message.Chat.ID, msg)
 }
