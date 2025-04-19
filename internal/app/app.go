@@ -43,8 +43,9 @@ func NewApp(apiToken string, dbPath string) (*App, error) {
 	userService := service.NewUserService(repo)
 	scheduleProcessor := crontabninja.NewClient("https://cronly.app/api/ai/generate")
 	notificationService := service.NewNotificationService(repo)
+	notificationFSMService := service.NewNotificationFSMService(scheduleProcessor, notificationService)
 	dialogService := service.NewDialogService(repo, scheduleProcessor, *notificationService)
-	telegramBot, err := bot.NewTelegramBot(apiToken, userService, dialogService)
+	telegramBot, err := bot.NewTelegramBot(apiToken, userService, notificationFSMService, dialogService)
 	if err != nil {
 		return nil, fmt.Errorf("failed to initialize bot: %w", err)
 	}

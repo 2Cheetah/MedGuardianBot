@@ -22,10 +22,6 @@ type DialogCreateNotification struct {
 	Text     string `json:"text"`
 }
 
-type ScheduleProcessor interface {
-	ParseSchedule(schedule string) (string, error)
-}
-
 func NewDialogService(repo domain.DialogRepository, sp ScheduleProcessor, ns NotificationService) *DialogService {
 	return &DialogService{
 		repo:                repo,
