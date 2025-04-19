@@ -42,8 +42,8 @@ func NewApp(apiToken string, dbPath string) (*App, error) {
 	repo := repository.NewRepository(db)
 	userService := service.NewUserService(repo)
 	scheduleProcessor := crontabninja.NewClient("https://cronly.app/api/ai/generate")
-	notificationFSMService := service.NewNotificationFSMService(scheduleProcessor)
 	notificationService := service.NewNotificationService(repo)
+	notificationFSMService := service.NewNotificationFSMService(scheduleProcessor, notificationService)
 	dialogService := service.NewDialogService(repo, scheduleProcessor, *notificationService)
 	telegramBot, err := bot.NewTelegramBot(apiToken, userService, notificationFSMService, dialogService)
 	if err != nil {

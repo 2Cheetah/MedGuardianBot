@@ -10,19 +10,21 @@ import (
 )
 
 type NotificationFSMService struct {
-	mu                sync.Mutex
-	sessions          map[int64]*domain.NotificationFSM // userID → FSM
-	scheduleProcessor ScheduleProcessor
+	mu                  sync.Mutex
+	sessions            map[int64]*domain.NotificationFSM // userID → FSM
+	scheduleProcessor   ScheduleProcessor
+	notificationService *NotificationService
 }
 
 type ScheduleProcessor interface {
 	ParseSchedule(schedule string) (string, error)
 }
 
-func NewNotificationFSMService(sp ScheduleProcessor) *NotificationFSMService {
+func NewNotificationFSMService(sp ScheduleProcessor, ns *NotificationService) *NotificationFSMService {
 	return &NotificationFSMService{
-		sessions:          make(map[int64]*domain.NotificationFSM),
-		scheduleProcessor: sp,
+		sessions:            make(map[int64]*domain.NotificationFSM),
+		scheduleProcessor:   sp,
+		notificationService: ns,
 	}
 }
 
@@ -72,10 +74,22 @@ func (nfsms *NotificationFSMService) HandleInput(userID int64, input string) (st
 		return "Until when do you want me to send notifications to you?", nil
 	case domain.StateWaitingUntil:
 		slog.Info("handling StateWaitingUntil")
+		until, err := time.Parse(time.DateOnly, input)
+		if err != nil {
+			return "Couldn't understand date", fmt.Errorf("couldn't parse message %s to date. Error: %w", input, err)
+		}
+		// TODO: validate input
+		session.PartialNotification.Until = until
 		session.State = domain.StateWaitingText
 		return "Notification message?", nil
 	case domain.StateWaitingText:
 		slog.Info("handling StateWaitingText")
+		// TODO: validate input
+		session.PartialNotification.Text = input
+		session.PartialNotification.Status = domain.NotificationStatusActive
+		if err := nfsms.notificationService.CreateNotification(&session.PartialNotification); err != nil {
+			return "Something went wrong, please, try again", fmt.Errorf("couldn't create notification %v. Error: %w", session.PartialNotification, err)
+		}
 		session.State = domain.StateCreated
 		return "Notification created!", nil
 	}
