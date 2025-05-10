@@ -13,6 +13,7 @@ import (
 	crontabninja "github.com/2Cheetah/MedGuardianBot/internal/crontabNinja"
 	"github.com/2Cheetah/MedGuardianBot/internal/repository"
 	"github.com/2Cheetah/MedGuardianBot/internal/service"
+	"github.com/2Cheetah/MedGuardianBot/internal/texttodate"
 
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/golang-migrate/migrate/v4/database/sqlite"
@@ -42,8 +43,10 @@ func NewApp(apiToken string, dbPath string) (*App, error) {
 	repo := repository.NewRepository(db)
 	userService := service.NewUserService(repo)
 	scheduleProcessor := crontabninja.NewClient("https://cronly.app/api/ai/generate")
+	apiKey := os.Getenv("GROQ_API_TOKEN")
+	untilParser := texttodate.NewParser(apiKey)
 	notificationService := service.NewNotificationService(repo)
-	notificationFSMService := service.NewNotificationFSMService(scheduleProcessor, notificationService)
+	notificationFSMService := service.NewNotificationFSMService(scheduleProcessor, untilParser, notificationService)
 	dialogService := service.NewDialogService(repo, scheduleProcessor, *notificationService)
 	telegramBot, err := bot.NewTelegramBot(apiToken, userService, notificationFSMService, dialogService)
 	if err != nil {

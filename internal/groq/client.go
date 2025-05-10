@@ -8,6 +8,7 @@ import (
 	"io"
 	"log/slog"
 	"net/http"
+	"strings"
 )
 
 const (
@@ -102,18 +103,18 @@ func (c *Client) CreateChatCompletion(ctx context.Context, req ChatCompletionReq
 	return &result, nil
 }
 
-func (c *Client) ParseSchedule(text string) (string, error) {
+func (c *Client) GetCompletion(prompt string, systemPrompt string) (string, error) {
 	slog.Info("entering ParseSchedule func")
 	req := ChatCompletionRequest{
 		Model: "gemma2-9b-it",
 		Messages: []Message{
 			{
 				Role:    RoleUser,
-				Content: text,
+				Content: prompt,
 			},
 			{
 				Role:    RoleSystem,
-				Content: "Convert to crontab representation. No explanation, just crontab representation.",
+				Content: systemPrompt,
 			},
 		},
 	}
@@ -153,4 +154,14 @@ func (c *Client) ParseSchedule(text string) (string, error) {
 	}
 
 	return result.Choices[0].Message.Content, nil
+}
+
+func (c *Client) ParseTextToISO8601(text string) (string, error) {
+	systemPrompt := "Convert to `ISO 8601` date format. No explanation, no additional data, just a text of date in a form of `YYYY-MM-DD`, for example `2025-10-25`."
+	resp, err := c.GetCompletion(text, systemPrompt)
+	if err != nil {
+		return "", fmt.Errorf("couldn't get chat completion from prompt: %s, error: %w", text, err)
+	}
+	res := strings.TrimSpace(resp)
+	return res, nil
 }

@@ -13,6 +13,7 @@ type NotificationFSMService struct {
 	mu                  sync.Mutex
 	sessions            map[int64]*domain.NotificationFSM // userID → FSM
 	scheduleProcessor   ScheduleProcessor
+	untilParser         UntilParser
 	notificationService *NotificationService
 }
 
@@ -20,10 +21,15 @@ type ScheduleProcessor interface {
 	ParseSchedule(schedule string) (string, error)
 }
 
-func NewNotificationFSMService(sp ScheduleProcessor, ns *NotificationService) *NotificationFSMService {
+type UntilParser interface {
+	ParseText(text string) (time.Time, error)
+}
+
+func NewNotificationFSMService(sp ScheduleProcessor, up UntilParser, ns *NotificationService) *NotificationFSMService {
 	return &NotificationFSMService{
 		sessions:            make(map[int64]*domain.NotificationFSM),
 		scheduleProcessor:   sp,
+		untilParser:         up,
 		notificationService: ns,
 	}
 }
@@ -74,7 +80,9 @@ func (nfsms *NotificationFSMService) HandleInput(userID int64, input string) (st
 		return "Until when do you want me to send notifications to you?", nil
 	case domain.StateWaitingUntil:
 		slog.Info("handling StateWaitingUntil")
-		until, err := time.Parse(time.DateOnly, input)
+		until, err := nfsms.untilParser.ParseText(input)
+		slog.Info("parsed until", "input", input, "until", until)
+		// until, err := time.Parse(time.DateOnly, input)
 		if err != nil {
 			return "Couldn't understand date", fmt.Errorf("couldn't parse message %s to date. Error: %w", input, err)
 		}
