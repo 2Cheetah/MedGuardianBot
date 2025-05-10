@@ -157,7 +157,7 @@ func (c *Client) GetCompletion(prompt string, systemPrompt string) (string, erro
 }
 
 func (c *Client) ParseTextToISO8601(text string) (string, error) {
-	systemPrompt := "Convert to `ISO 8601` date format. No explanation, no additional data, just a text of date in a form of `YYYY-MM-DD`, for example `2025-10-25`."
+	systemPrompt := "Extract data from the input prompt and convert it to `ISO 8601` date format. No explanation, no additional data, just a text of date in a form of `YYYY-MM-DD`, for example `2025-10-25`."
 	resp, err := c.GetCompletion(text, systemPrompt)
 	if err != nil {
 		return "", fmt.Errorf("couldn't get chat completion from prompt: %s, error: %w", text, err)
