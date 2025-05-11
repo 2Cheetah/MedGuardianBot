@@ -13,6 +13,7 @@ type NotificationFSMService struct {
 	mu                  sync.Mutex
 	sessions            map[int64]*domain.NotificationFSM // userID → FSM
 	scheduleProcessor   ScheduleProcessor
+	cronParser          CronParser
 	untilParser         UntilParser
 	notificationService *NotificationService
 }
@@ -21,14 +22,19 @@ type ScheduleProcessor interface {
 	ParseSchedule(schedule string) (string, error)
 }
 
+type CronParser interface {
+	NextTime(crontab string) (time.Time, error)
+}
+
 type UntilParser interface {
 	ParseText(text string) (time.Time, error)
 }
 
-func NewNotificationFSMService(sp ScheduleProcessor, up UntilParser, ns *NotificationService) *NotificationFSMService {
+func NewNotificationFSMService(sp ScheduleProcessor, cp CronParser, up UntilParser, ns *NotificationService) *NotificationFSMService {
 	return &NotificationFSMService{
 		sessions:            make(map[int64]*domain.NotificationFSM),
 		scheduleProcessor:   sp,
+		cronParser:          cp,
 		untilParser:         up,
 		notificationService: ns,
 	}
@@ -94,6 +100,12 @@ func (nfsms *NotificationFSMService) HandleInput(userID int64, input string) (st
 		// TODO: validate input
 		session.PartialNotification.Text = input
 		session.PartialNotification.Status = domain.NotificationStatusActive
+		// Set next event timestamp
+		nextTime, err := nfsms.cronParser.NextTime(session.PartialNotification.Schedule)
+		if err != nil {
+			return "Couldn't define timestamp for the next notification", fmt.Errorf("couldn't define timestap for the next notification, error: %w", err)
+		}
+		session.PartialNotification.Next = nextTime
 		if err := nfsms.notificationService.CreateNotification(&session.PartialNotification); err != nil {
 			return "Something went wrong, please, try again", fmt.Errorf("couldn't create notification %v. Error: %w", session.PartialNotification, err)
 		}
