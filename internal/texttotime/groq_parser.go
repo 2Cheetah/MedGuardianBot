@@ -1,4 +1,4 @@
-package texttodate
+package texttotime
 
 import (
 	"fmt"

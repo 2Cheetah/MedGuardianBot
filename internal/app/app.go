@@ -14,7 +14,7 @@ import (
 	"github.com/2Cheetah/MedGuardianBot/internal/repository"
 	"github.com/2Cheetah/MedGuardianBot/internal/service"
 	"github.com/2Cheetah/MedGuardianBot/internal/texttocron"
-	"github.com/2Cheetah/MedGuardianBot/internal/texttodate"
+	"github.com/2Cheetah/MedGuardianBot/internal/texttotime"
 
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/golang-migrate/migrate/v4/database/sqlite"
@@ -46,9 +46,9 @@ func NewApp(apiToken string, dbPath string) (*App, error) {
 	ttc := texttocron.NewClient("https://cronly.app/api/ai/generate")
 	ctd := crontodate.NewParser()
 	apiKey := os.Getenv("GROQ_API_TOKEN")
-	ttd := texttodate.NewParser(apiKey)
+	ttt := texttotime.NewParser(apiKey)
 	ns := service.NewNotificationService(repo)
-	nfsms := service.NewNotificationFSMService(ttc, ctd, ttd, ns)
+	nfsms := service.NewNotificationFSMService(ttc, ctd, ttt, ns)
 	ds := service.NewDialogService(repo, ttc, *ns)
 	telegramBot, err := bot.NewTelegramBot(apiToken, us, nfsms, ds)
 	if err != nil {

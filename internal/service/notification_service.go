@@ -14,7 +14,7 @@ type NotificationFSMService struct {
 	sessions            map[int64]*domain.NotificationFSM // userID → FSM
 	textToCron          TextToCron
 	cronToDate          CronToDate
-	textToDate          TextToDate
+	textToTime          TextToTime
 	notificationService *NotificationService
 }
 
@@ -26,16 +26,16 @@ type CronToDate interface {
 	NextTime(crontab string) (time.Time, error)
 }
 
-type TextToDate interface {
+type TextToTime interface {
 	ParseText(text string) (time.Time, error)
 }
 
-func NewNotificationFSMService(ttc TextToCron, ctd CronToDate, ttd TextToDate, ns *NotificationService) *NotificationFSMService {
+func NewNotificationFSMService(ttc TextToCron, ctd CronToDate, ttt TextToTime, ns *NotificationService) *NotificationFSMService {
 	return &NotificationFSMService{
 		sessions:            make(map[int64]*domain.NotificationFSM),
 		textToCron:          ttc,
 		cronToDate:          ctd,
-		textToDate:          ttd,
+		textToTime:          ttt,
 		notificationService: ns,
 	}
 }
@@ -86,7 +86,7 @@ func (nfsms *NotificationFSMService) HandleInput(userID int64, input string) (st
 		return "Until when do you want me to send notifications to you?", nil
 	case domain.StateWaitingUntil:
 		slog.Info("handling StateWaitingUntil")
-		until, err := nfsms.textToDate.ParseText(input)
+		until, err := nfsms.textToTime.ParseText(input)
 		slog.Info("parsed until", "input", input, "until", until)
 		if err != nil {
 			return "Couldn't understand date", fmt.Errorf("couldn't parse message %s to date. Error: %w", input, err)
