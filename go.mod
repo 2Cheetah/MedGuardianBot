@@ -6,6 +6,7 @@ require (
 	github.com/go-telegram/bot v1.14.0
 	github.com/golang-migrate/migrate/v4 v4.18.2
 	github.com/mattn/go-sqlite3 v1.14.24
+	github.com/robfig/cron/v3 v3.0.1
 )
 
 require (
