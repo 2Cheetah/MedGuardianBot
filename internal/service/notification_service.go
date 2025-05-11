@@ -12,30 +12,30 @@ import (
 type NotificationFSMService struct {
 	mu                  sync.Mutex
 	sessions            map[int64]*domain.NotificationFSM // userID → FSM
-	scheduleProcessor   ScheduleProcessor
-	cronParser          CronParser
-	untilParser         UntilParser
+	textToCron          TextToCron
+	cronToDate          CronToDate
+	textToDate          TextToDate
 	notificationService *NotificationService
 }
 
-type ScheduleProcessor interface {
+type TextToCron interface {
 	ParseSchedule(schedule string) (string, error)
 }
 
-type CronParser interface {
+type CronToDate interface {
 	NextTime(crontab string) (time.Time, error)
 }
 
-type UntilParser interface {
+type TextToDate interface {
 	ParseText(text string) (time.Time, error)
 }
 
-func NewNotificationFSMService(sp ScheduleProcessor, cp CronParser, up UntilParser, ns *NotificationService) *NotificationFSMService {
+func NewNotificationFSMService(ttc TextToCron, ctd CronToDate, ttd TextToDate, ns *NotificationService) *NotificationFSMService {
 	return &NotificationFSMService{
 		sessions:            make(map[int64]*domain.NotificationFSM),
-		scheduleProcessor:   sp,
-		cronParser:          cp,
-		untilParser:         up,
+		textToCron:          ttc,
+		cronToDate:          ctd,
+		textToDate:          ttd,
 		notificationService: ns,
 	}
 }
@@ -77,7 +77,7 @@ func (nfsms *NotificationFSMService) HandleInput(userID int64, input string) (st
 	switch session.State {
 	case domain.StateWaitingSchedule:
 		slog.Info("handling StateWaitingSchedule")
-		schedule, err := nfsms.scheduleProcessor.ParseSchedule(input)
+		schedule, err := nfsms.textToCron.ParseSchedule(input)
 		if err != nil {
 			return "Couldn't understand your schedule, try again?", fmt.Errorf("couldn't parse schedule string %s to a crontab. Error: %w", input, err)
 		}
@@ -86,7 +86,7 @@ func (nfsms *NotificationFSMService) HandleInput(userID int64, input string) (st
 		return "Until when do you want me to send notifications to you?", nil
 	case domain.StateWaitingUntil:
 		slog.Info("handling StateWaitingUntil")
-		until, err := nfsms.untilParser.ParseText(input)
+		until, err := nfsms.textToDate.ParseText(input)
 		slog.Info("parsed until", "input", input, "until", until)
 		if err != nil {
 			return "Couldn't understand date", fmt.Errorf("couldn't parse message %s to date. Error: %w", input, err)
@@ -101,7 +101,7 @@ func (nfsms *NotificationFSMService) HandleInput(userID int64, input string) (st
 		session.PartialNotification.Text = input
 		session.PartialNotification.Status = domain.NotificationStatusActive
 		// Set next event timestamp
-		nextTime, err := nfsms.cronParser.NextTime(session.PartialNotification.Schedule)
+		nextTime, err := nfsms.cronToDate.NextTime(session.PartialNotification.Schedule)
 		if err != nil {
 			return "Couldn't define timestamp for the next notification", fmt.Errorf("couldn't define timestap for the next notification, error: %w", err)
 		}

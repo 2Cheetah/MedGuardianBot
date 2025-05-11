@@ -10,10 +10,10 @@ import (
 	"time"
 
 	"github.com/2Cheetah/MedGuardianBot/internal/bot"
-	"github.com/2Cheetah/MedGuardianBot/internal/cronparser"
-	crontabninja "github.com/2Cheetah/MedGuardianBot/internal/crontabNinja"
+	"github.com/2Cheetah/MedGuardianBot/internal/crontodate"
 	"github.com/2Cheetah/MedGuardianBot/internal/repository"
 	"github.com/2Cheetah/MedGuardianBot/internal/service"
+	"github.com/2Cheetah/MedGuardianBot/internal/texttocron"
 	"github.com/2Cheetah/MedGuardianBot/internal/texttodate"
 
 	"github.com/golang-migrate/migrate/v4"
@@ -42,15 +42,15 @@ func NewApp(apiToken string, dbPath string) (*App, error) {
 	}
 
 	repo := repository.NewRepository(db)
-	userService := service.NewUserService(repo)
-	scheduleProcessor := crontabninja.NewClient("https://cronly.app/api/ai/generate")
-	cronParser := cronparser.NewParser()
+	us := service.NewUserService(repo)
+	ttc := texttocron.NewClient("https://cronly.app/api/ai/generate")
+	ctd := crontodate.NewParser()
 	apiKey := os.Getenv("GROQ_API_TOKEN")
-	untilParser := texttodate.NewParser(apiKey)
-	notificationService := service.NewNotificationService(repo)
-	notificationFSMService := service.NewNotificationFSMService(scheduleProcessor, cronParser, untilParser, notificationService)
-	dialogService := service.NewDialogService(repo, scheduleProcessor, *notificationService)
-	telegramBot, err := bot.NewTelegramBot(apiToken, userService, notificationFSMService, dialogService)
+	ttd := texttodate.NewParser(apiKey)
+	ns := service.NewNotificationService(repo)
+	nfsms := service.NewNotificationFSMService(ttc, ctd, ttd, ns)
+	ds := service.NewDialogService(repo, ttc, *ns)
+	telegramBot, err := bot.NewTelegramBot(apiToken, us, nfsms, ds)
 	if err != nil {
 		return nil, fmt.Errorf("failed to initialize bot: %w", err)
 	}

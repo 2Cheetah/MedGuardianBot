@@ -1,4 +1,4 @@
-package crontabninja
+package texttocron
 
 import (
 	"bytes"
