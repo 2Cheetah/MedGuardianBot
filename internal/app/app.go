@@ -49,8 +49,8 @@ func NewApp(apiToken string, dbPath string) (*App, error) {
 	ttt := texttotime.NewParser(apiKey)
 	ns := service.NewNotificationService(repo)
 	nfsms := service.NewNotificationFSMService(ttc, ctt, ttt, ns)
-	ds := service.NewDialogService(repo, ttc, *ns)
-	telegramBot, err := bot.NewTelegramBot(apiToken, us, nfsms, ds)
+	// ds := service.NewDialogService(repo, ttc, *ns)
+	telegramBot, err := bot.NewTelegramBot(apiToken, us, nfsms)
 	if err != nil {
 		return nil, fmt.Errorf("failed to initialize bot: %w", err)
 	}

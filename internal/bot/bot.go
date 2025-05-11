@@ -15,14 +15,14 @@ type TelegramBot struct {
 	bot                    *bot.Bot
 	UserService            *service.UserService
 	NotificationFSMService *service.NotificationFSMService
-	DialogService          *service.DialogService
+	// DialogService          *service.DialogService
 }
 
-func NewTelegramBot(apiToken string, us *service.UserService, nfsms *service.NotificationFSMService, ds *service.DialogService) (*TelegramBot, error) {
+func NewTelegramBot(apiToken string, us *service.UserService, nfsms *service.NotificationFSMService) (*TelegramBot, error) {
 	tb := &TelegramBot{
 		UserService:            us,
 		NotificationFSMService: nfsms,
-		DialogService:          ds,
+		// DialogService:          ds,
 	}
 	opts := []bot.Option{
 		bot.WithDefaultHandler(tb.handleArbitraryText),
