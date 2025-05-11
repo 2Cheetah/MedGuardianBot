@@ -82,7 +82,6 @@ func (nfsms *NotificationFSMService) HandleInput(userID int64, input string) (st
 		slog.Info("handling StateWaitingUntil")
 		until, err := nfsms.untilParser.ParseText(input)
 		slog.Info("parsed until", "input", input, "until", until)
-		// until, err := time.Parse(time.DateOnly, input)
 		if err != nil {
 			return "Couldn't understand date", fmt.Errorf("couldn't parse message %s to date. Error: %w", input, err)
 		}
