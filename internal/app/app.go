@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"github.com/2Cheetah/MedGuardianBot/internal/bot"
-	"github.com/2Cheetah/MedGuardianBot/internal/crontodate"
+	"github.com/2Cheetah/MedGuardianBot/internal/crontotime"
 	"github.com/2Cheetah/MedGuardianBot/internal/repository"
 	"github.com/2Cheetah/MedGuardianBot/internal/service"
 	"github.com/2Cheetah/MedGuardianBot/internal/texttocron"
@@ -44,11 +44,11 @@ func NewApp(apiToken string, dbPath string) (*App, error) {
 	repo := repository.NewRepository(db)
 	us := service.NewUserService(repo)
 	ttc := texttocron.NewClient("https://cronly.app/api/ai/generate")
-	ctd := crontodate.NewParser()
+	ctt := crontotime.NewParser()
 	apiKey := os.Getenv("GROQ_API_TOKEN")
 	ttt := texttotime.NewParser(apiKey)
 	ns := service.NewNotificationService(repo)
-	nfsms := service.NewNotificationFSMService(ttc, ctd, ttt, ns)
+	nfsms := service.NewNotificationFSMService(ttc, ctt, ttt, ns)
 	ds := service.NewDialogService(repo, ttc, *ns)
 	telegramBot, err := bot.NewTelegramBot(apiToken, us, nfsms, ds)
 	if err != nil {

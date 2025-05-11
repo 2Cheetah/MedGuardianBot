@@ -13,7 +13,7 @@ type NotificationFSMService struct {
 	mu                  sync.Mutex
 	sessions            map[int64]*domain.NotificationFSM // userID → FSM
 	textToCron          TextToCron
-	cronToDate          CronToDate
+	cronToTime          CronToTime
 	textToTime          TextToTime
 	notificationService *NotificationService
 }
@@ -22,7 +22,7 @@ type TextToCron interface {
 	ParseSchedule(schedule string) (string, error)
 }
 
-type CronToDate interface {
+type CronToTime interface {
 	NextTime(crontab string) (time.Time, error)
 }
 
@@ -30,11 +30,11 @@ type TextToTime interface {
 	ParseText(text string) (time.Time, error)
 }
 
-func NewNotificationFSMService(ttc TextToCron, ctd CronToDate, ttt TextToTime, ns *NotificationService) *NotificationFSMService {
+func NewNotificationFSMService(ttc TextToCron, ctt CronToTime, ttt TextToTime, ns *NotificationService) *NotificationFSMService {
 	return &NotificationFSMService{
 		sessions:            make(map[int64]*domain.NotificationFSM),
 		textToCron:          ttc,
-		cronToDate:          ctd,
+		cronToTime:          ctt,
 		textToTime:          ttt,
 		notificationService: ns,
 	}
@@ -101,7 +101,7 @@ func (nfsms *NotificationFSMService) HandleInput(userID int64, input string) (st
 		session.PartialNotification.Text = input
 		session.PartialNotification.Status = domain.NotificationStatusActive
 		// Set next event timestamp
-		nextTime, err := nfsms.cronToDate.NextTime(session.PartialNotification.Schedule)
+		nextTime, err := nfsms.cronToTime.NextTime(session.PartialNotification.Schedule)
 		if err != nil {
 			return "Couldn't define timestamp for the next notification", fmt.Errorf("couldn't define timestap for the next notification, error: %w", err)
 		}

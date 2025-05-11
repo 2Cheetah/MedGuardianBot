@@ -1,4 +1,4 @@
-package crontodate
+package crontotime
 
 import (
 	"fmt"
@@ -7,16 +7,16 @@ import (
 	"github.com/robfig/cron/v3"
 )
 
-type CronToDate struct {
+type CronToTime struct {
 	parser cron.Parser
 }
 
-func NewParser() *CronToDate {
+func NewParser() *CronToTime {
 	parser := cron.NewParser(cron.Minute | cron.Hour | cron.Dom | cron.Month | cron.Dow)
-	return &CronToDate{parser: parser}
+	return &CronToTime{parser: parser}
 }
 
-func (ctd *CronToDate) NextTime(crontab string) (time.Time, error) {
+func (ctd *CronToTime) NextTime(crontab string) (time.Time, error) {
 	schedule, err := ctd.parser.Parse(crontab)
 	if err != nil {
 		return time.Time{}, fmt.Errorf("error parsing cron expression: %w", err)
