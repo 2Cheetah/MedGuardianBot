@@ -8,7 +8,11 @@ import (
 )
 
 type Parser struct {
-	llm *groq.Client
+	llm LLMClient
+}
+
+type LLMClient interface {
+	ParseTextToISO8601(text string) (string, error)
 }
 
 func NewParser(apiKey string) *Parser {
